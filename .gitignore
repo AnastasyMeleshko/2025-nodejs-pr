@@ -1,0 +1,18 @@
+# IDE
+.idea/
+.vscode/
+
+# Node
+node_modules/
+
+# Backups
+pr-1/task/backups/
+pr-2/task/backups/
+backups/
+
+# Logs
+*.log
+
+# OS garbage
+.DS_Store
+Thumbs.db
