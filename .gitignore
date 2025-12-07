@@ -4,11 +4,14 @@
 
 # Node
 node_modules/
+npm-debug.log
+yarn-error.log
 
 # Backups
 pr-1/task/backups/
 pr-2/task/backups/
 backups/
+*.backup.json
 
 # Logs
 *.log
@@ -16,3 +19,6 @@ backups/
 # OS garbage
 .DS_Store
 Thumbs.db
+
+# Optional editor files
+*.swp
