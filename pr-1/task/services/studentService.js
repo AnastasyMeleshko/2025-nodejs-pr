@@ -1,25 +1,45 @@
-// services/studentService.js
+
 const Student = require('../models/Student');
 
-// Array to store all student instances
 const students = [];
 
 /**
  * Add a new student
- * @param {{name: string, age: number, group: string|number}} studentData
- * @returns {Student}
  */
 function addStudent({ name, age, group }) {
-    const id = Date.now().toString(); // simple unique ID
+    const id = Date.now().toString();
     const student = new Student(id, name, age, group);
     students.push(student);
     return student;
 }
 
 /**
- * Remove a student by ID
- * @param {string} id
- * @returns {boolean} true if removed, false if not found
+ * Get all students
+ */
+function getAllStudents() {
+    return students;
+}
+
+/**
+ * Load students from array of objects
+ */
+function loadStudents(array) {
+    if (!Array.isArray(array)) return;
+    students.length = 0;
+    array.forEach(obj => {
+        students.push(new Student(obj.id, obj.name, obj.age, obj.group));
+    });
+}
+
+/**
+ * Get student by ID
+ */
+function getStudentById(id) {
+    return students.find(s => s.id === id) || null;
+}
+
+/**
+ * Remove student by ID
  */
 function removeStudent(id) {
     const idx = students.findIndex(s => s.id === id);
@@ -29,73 +49,17 @@ function removeStudent(id) {
 }
 
 /**
- * Get a student by ID
- * @param {string} id
- * @returns {Student|null}
- */
-function getStudentById(id) {
-    return students.find(s => s.id === id) || null;
-}
-
-/**
- * Get all students from a specific group
- * @param {string|number} group
- * @returns {Student[]}
- */
-function getStudentsByGroup(group) {
-    return students.filter(s => s.group === group);
-}
-
-/**
- * Get all students
- * @returns {Student[]}
- */
-function getAllStudents() {
-    return students;
-}
-
-/**
- * Calculate average age of all students
- * @returns {number}
- */
-function calculateAverageAge() {
-    if (students.length === 0) return 0;
-    const total = students.reduce((sum, s) => sum + s.age, 0);
-    return total / students.length;
-}
-
-/**
- * Load students from plain object array
- * @param {Array} array
- */
-function loadStudents(array) {
-    students.length = 0; // clear existing
-    array.forEach(obj => {
-        students.push(new Student(obj.id, obj.name, obj.age, obj.group));
-    });
-}
-
-/**
- * Convert all students to plain objects for JSON storage
- * @returns {Array}
+ * Convert all students to plain objects for JSON
  */
 function getPlainStudents() {
-    return students.map(s => ({
-        id: s.id,
-        name: s.name,
-        age: s.age,
-        group: s.group
-    }));
+    return students.map(s => ({ id: s.id, name: s.name, age: s.age, group: s.group }));
 }
 
 module.exports = {
-    students,
     addStudent,
-    removeStudent,
-    getStudentById,
-    getStudentsByGroup,
     getAllStudents,
-    calculateAverageAge,
     loadStudents,
-    getPlainStudents
+    getPlainStudents,
+    getStudentById,
+    removeStudent
 };
