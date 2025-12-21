@@ -21,3 +21,8 @@ Thumbs.db
 
 # Optional editor files
 *.swp
+
+dist/
+
+.env
+
