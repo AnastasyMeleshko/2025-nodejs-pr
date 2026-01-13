@@ -1,11 +1,9 @@
 {
-  "name": "pr-1",
+  "name": "pr-5",
   "version": "1.0.0",
   "description": "In this Practical Task you will work with pure Node.js without any frameworks and external libraries.",
-  "main": "index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "start": "node index.js",
     "dev": "nodemon src/server.ts",
     "migrate": "ts-node src/db/migrate.ts"
   },
