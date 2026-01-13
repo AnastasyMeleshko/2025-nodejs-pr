@@ -1,9 +1,9 @@
 import { Table, Column, Model, DataType, PrimaryKey, Default } from 'sequelize-typescript';
 
 @Table({ tableName: 'students', timestamps: false })
-export class Student extends Model {
+export class Student extends Model<Student> {
   @PrimaryKey
-  @Default(DataType.UUIDV4) // <- UUID
+  @Default(DataType.UUIDV4)
   @Column({ type: DataType.UUID })
   id!: string;
 
