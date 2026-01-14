@@ -1,14 +1,16 @@
 import { Request, Response, NextFunction } from 'express';
-import { verifyToken } from '../services/authService';
+import jwt from 'jsonwebtoken';
 
 export function authMiddleware(req: Request, res: Response, next: NextFunction) {
-  const authHeader = req.headers.authorization;
-  if (!authHeader) return res.status(401).json({ error: 'No token provided' });
+  const header = req.headers.authorization;
+  if (!header) return res.status(401).json({ error: 'No token' });
 
-  const token = authHeader.split(' ')[1];
-  const decoded = verifyToken(token);
-  if (!decoded) return res.status(401).json({ error: 'Invalid token' });
-
-  (req as any).user = decoded; // attach decoded token to request
-  next();
+  try {
+    const token = header.split(' ')[1];
+    const decoded = jwt.verify(token, process.env.JWT_SECRET!);
+    (req as any).user = decoded;
+    next();
+  } catch {
+    res.status(401).json({ error: 'Invalid token' });
+  }
 }

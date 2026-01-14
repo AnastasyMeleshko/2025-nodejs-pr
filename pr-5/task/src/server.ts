@@ -5,6 +5,7 @@ import { Student } from './models/Student';
 import { studentSchema } from './validators/studentValidator';
 import authRoutes from './routes/authRoutes';
 import { authMiddleware } from './middleware/authMiddleware';
+import { roleMiddleware } from './middleware/roleMiddleware';
 
 import dotenv from 'dotenv';
 dotenv.config();
@@ -68,10 +69,20 @@ app.delete('/api/students/:id', async (req: Request, res: Response) => {
 // --- START SERVER ---
 app.listen(PORT, () => console.log(`Server running at http://localhost:${PORT}`));
 
-// подключаем маршруты
+
 app.use('/api/auth', authRoutes);
 
-// Пример защищённого маршрута
-app.get('/api/protected', authMiddleware, (req, res) => {
-  res.json({ message: 'You are authenticated', user: (req as any).user });
+app.get('/api/students', authMiddleware, async (req, res) => {
+  res.json(await Student.findAll());
 });
+
+app.post(
+    '/api/students',
+    authMiddleware,
+    roleMiddleware(['admin', 'teacher']),
+    async (req, res) => {
+      const student = await Student.create(req.body);
+      res.json(student);
+    }
+);
+
