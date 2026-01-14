@@ -1,125 +1,335 @@
-# Student Management System (Lab 4)
+# Students Management System
 
-This is a Node.js + TypeScript project for managing student data. The data is stored in a **PostgreSQL** database, and all CRUD operations are implemented. Data validation is included using **Joi**, and the database can be initialized automatically via Sequelize.
+**Node.js + TypeScript + Express + PostgreSQL**
+
+## 📌 Project Description
+
+This project is a Students Management System built with **Node.js**, **TypeScript**, **Express**, and **PostgreSQL** using **Sequelize ORM**.
+
+The project was developed step by step during laboratory works.
+**Lab 5** extends the previous functionality by adding **authentication, authorization, roles, and permissions**.
 
 ---
 
-## **1. Setup**
+## 🛠 Technologies Used
 
-### **1.1 Clone the repository**
+* Node.js
+* TypeScript
+* Express
+* PostgreSQL
+* Sequelize + sequelize-typescript
+* JWT (jsonwebtoken)
+* bcrypt
+* Joi (data validation)
+* dotenv
 
-```bash
-git clone <your-repo-url>
-cd <your-project-folder>
-```
+---
 
-### **1.2 Install dependencies**
-
-```bash
-npm install
-```
-
-### **1.3 Setup `.env` file**
-
-Create a file named `.env` in the root of the project and add the following configuration:
+## 📂 Project Structure
 
 ```
+pr-5/
+└── task/
+    ├── .env
+    ├── package.json
+    └── src/
+        ├── db/
+        │   ├── db.ts
+        │   └── migrate.ts
+        ├── models/
+        │   ├── Student.ts
+        │   ├── User.ts
+        │   ├── Role.ts
+        │   ├── Subject.ts
+        │   └── Grade.ts
+        ├── services/
+        ├── validators/
+        │   └── studentValidator.ts
+        ├── initData.ts
+        └── server.ts
+```
+
+---
+
+## ⚙️ Environment Configuration
+
+Create a `.env` file in the `task` folder with the following content:
+
+```env
 DB_HOST=localhost
 DB_PORT=5433
 DB_NAME=students_db
 DB_USER=postgres
 DB_PASSWORD=postgres
 PORT=3000
+JWT_SECRET=supersecretkey
 ```
 
-**Explanation:**
-
-* `DB_HOST` — Database server host (localhost if running locally).
-* `DB_PORT` — PostgreSQL port (default here is 5433).
-* `DB_NAME` — Name of the database (`students_db`).
-* `DB_USER` — Database user (`postgres`).
-* `DB_PASSWORD` — Password for the user (`postgres`).
-* `PORT` — Port for the Express server (default 3000).
-
 ---
 
-### **1.4 Run PostgreSQL**
+## 🗄 Database Setup
 
-Make sure PostgreSQL server is running and accessible using the credentials from `.env`. You can use pgAdmin or CLI to create the database `students_db` if it doesn’t exist.
+1. Create a PostgreSQL database:
 
----
+```sql
+CREATE DATABASE students_db;
+```
 
-### **1.5 Run database migration**
+2. Install dependencies:
 
-To create tables automatically:
+```bash
+npm install
+```
+
+3. Run migration (creates tables and test data):
 
 ```bash
 npx ts-node src/db/migrate.ts
 ```
 
-Or, if using Sequelize sync in `db.ts`:
+The following tables will be created automatically:
 
-```ts
-sequelize.sync({ force: false });
-```
-
-This will create the `students` table automatically.
+* `roles`
+* `users`
+* `students`
+* `subjects`
+* `grades`
 
 ---
 
-### **1.6 Start the server**
-
+4. Run server 
 ```bash
 npm run dev
 ```
+## 🔐 Authentication & Authorization (Lab 5)
 
-Server will start on `http://localhost:3000`.
+### Roles
+
+The system supports **role-based access control**:
+
+* **admin** – full access
+* **teacher** – extended permissions
+* **student** – limited permissions
+
+Roles are stored in the database and included in the JWT token.
 
 ---
 
-## **2. API Endpoints**
+Absolutely, Anastasya — here’s a clean, professional **README section in English** that explains how to test **registration, login, JWT authentication, and role‑based access** in your API.  
+It’s written in a style suitable for GitHub.
 
-### **2.1 Get all students**
+---
+
+# 📘 Authentication & Authorization Testing Guide
+
+This guide explains how to test **user registration**, **login**, **JWT authentication**, and **role‑based access control** using Postman or any REST client.
+
+---
+
+## 🔐 1. Register a New User
+
+### **Endpoint**
+```
+POST /api/auth/register
+```
+
+### **Body (JSON)**
+```json
+{
+  "name": "Alice",
+  "surname": "Test",
+  "email": "alice@test.com",
+  "password": "123456",
+  "roleId": "<ROLE_UUID>"
+}
+```
+
+### **Where to get `roleId`**
+Run:
+```sql
+SELECT * FROM roles;
+```
+You will see UUIDs for:
+- `student`
+- `teacher`
+- `admin`
+
+### **Expected Response**
+```json
+{
+  "id": "...",
+  "name": "Alice",
+  "surname": "Test",
+  "email": "alice@test.com",
+  "role": "student"
+}
+```
+
+If you see this — registration works correctly.
+
+---
+
+## 🔑 2. Login
+
+### **Endpoint**
+```
+POST /api/auth/login
+```
+
+### **Body (JSON)**
+```json
+{
+  "email": "alice@test.com",
+  "password": "123456"
+}
+```
+
+### **Expected Response**
+```json
+{
+  "token": "eyJhbGciOiJIUzI1NiIs..."
+}
+```
+
+This token must be used for all protected routes.
+
+---
+
+## 🧪 3. Decode the Token (Optional)
+
+Go to:  
+https://jwt.io
+
+Paste the token and verify that the payload contains:
+
+```json
+{
+  "id": "...",
+  "email": "alice@test.com",
+  "role": "student"
+}
+```
+
+If `role` is a string (`admin`, `teacher`, `student`), role‑based access will work.
+
+---
+
+## 🔒 4. Access a Protected Route
+
+Example:
+
+### **Endpoint**
+```
+GET /api/students
+```
+
+### **Headers**
+```
+Authorization: Bearer <your_token_here>
+```
+
+### **Expected Response**
+- If the token is valid → list of students
+- If missing token → `{ "error": "No token" }`
+- If token is invalid → `{ "error": "Invalid token" }`
+
+---
+
+## 🛡 5. Test Role‑Based Access
+
+Creating a student requires `admin` or `teacher` role.
+
+### **Endpoint**
+```
+POST /api/students
+```
+
+### **Headers**
+```
+Authorization: Bearer <your_token_here>
+```
+
+### **Body**
+```json
+{
+  "name": "Bob",
+  "age": 20,
+  "group": "A1"
+}
+```
+
+### **Expected Behavior**
+- **admin / teacher** → student is created (200 OK)
+- **student** → `{ "error": "Forbidden" }`
+
+This confirms that `roleMiddleware` works.
+
+---
+
+## ❌ 6. Negative Test Cases
+
+### Wrong password
+```
+POST /api/auth/login
+```
+```json
+{
+  "email": "alice@test.com",
+  "password": "wrong"
+}
+```
+Expected:
+```json
+{ "error": "Invalid credentials" }
+```
+
+### Wrong email
+```json
+{ "email": "unknown@test.com", "password": "123456" }
+```
+Expected:
+```json
+{ "error": "Invalid credentials" }
+```
+
+### Missing token
+```
+GET /api/students
+```
+Expected:
+```json
+{ "error": "No token" }
+```
+
+---
+
+## 📚 Students API
+
+### Get all students
 
 ```
 GET /api/students
 ```
 
-### **2.2 Get a student by ID**
+### Get student by ID
 
 ```
 GET /api/students/:id
 ```
 
-### **2.3 Add a new student**
+### Create student (admin / teacher only)
 
 ```
 POST /api/students
-Content-Type: application/json
-
-{
-  "name": "David",
-  "age": 23,
-  "group": "D1"
-}
 ```
 
-Validation: Name (string), Age (number), Group (string). Returns 400 if invalid.
-
-### **2.4 Update a student**
+### Update student (admin / teacher only)
 
 ```
 PUT /api/students/:id
-Content-Type: application/json
-
-{
-  "name": "David Updated",
-  "age": 24,
-  "group": "D2"
-}
 ```
 
-### **2.5 Delete a student**
+### Delete student (admin only)
 
 ```
 DELETE /api/students/:id
@@ -127,61 +337,70 @@ DELETE /api/students/:id
 
 ---
 
-## **3. Project Structure**
+## ✅ Data Validation
 
-```
-/src
-  /db
-    db.ts          # Database connection
-    migrate.ts     # Migration script for initial data
-  /models
-    Student.ts     # Sequelize model for Student
-  /validators
-    studentValidator.ts  # Joi validation schema
-  server.ts        # Express server
-.env               # Environment variables
-package.json
-```
+All `POST` and `PUT` requests are validated using **Joi**.
+
+Example validation errors:
+
+* empty name
+* negative age
+* missing required fields
+
+Invalid requests return **HTTP 400**.
 
 ---
 
-## **4. Short Step-by-Step Report for Lab 4**
+## 🔐 Security
 
-1. **Setup PostgreSQL**
+* Passwords are encrypted using **bcrypt**
+* Plain text passwords are never stored
+* JWT is used for authentication
+* Role-based middleware prevents unauthorized access
 
-    * Installed PostgreSQL locally.
-    * Created database `students_db`.
+---
 
-2. **Configure `.env`**
+## 🧪 How to Test the Application
 
-    * Added DB_HOST, DB_PORT, DB_NAME, DB_USER, DB_PASSWORD, PORT.
+1. Start the server:
 
-3. **Connect Node.js project to PostgreSQL**
+```bash
+npm run dev
+```
 
-    * Installed `pg`, `pg-hstore`, `sequelize`, `sequelize-typescript`.
-    * Configured `db.ts` with Sequelize using `.env` variables.
+2. Use **Postman** or **Bruno**
 
-4. **Create Student model**
+3. Steps:
 
-    * Defined `Student` model with `id`, `name`, `age`, `group`.
-    * Set `id` as primary key.
+   * Register a user
+   * Login and get JWT token
+   * Access protected endpoints with and without token
+   * Verify role restrictions
+   * Try invalid input to test Joi validation
 
-5. **Database migration / sync**
+---
 
-    * Ran `migrate.ts` or `sequelize.sync()` to create `students` table.
-    * Seeded initial test data with unique `id`.
+## 📝 Lab 5 Summary
 
-6. **CRUD Endpoints**
+During Lab 5 the following features were implemented:
 
-    * Implemented `/api/students` endpoints with Express.
-    * Added Joi validation for POST and PUT.
+1. Database structure was expanded with new tables
+2. Authentication using JWT was added
+3. Password encryption with bcrypt
+4. Role-based access control
+5. Protected API endpoints
+6. Input validation using Joi
+7. Clean and modular project structure
 
-7. **Tested all endpoints**
+---
 
-    * Verified GET, POST, PUT, DELETE.
-    * Checked responses, status codes, and data stored in PostgreSQL.
+## ✅ Conclusion
 
-8. **Backup service** (optional for lab 3 continuation)
+The project fully meets the requirements of **Laboratory Work 5**:
 
-    * Handles periodic JSON backups if required.
+* Secure authentication
+* Proper authorization
+* Expanded database schema
+* Stable and structured code
 
+---
