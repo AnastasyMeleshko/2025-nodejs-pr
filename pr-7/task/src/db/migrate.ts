@@ -18,9 +18,10 @@ async function migrate() {
 
     // --- Seed roles ---
     const roles = await Role.bulkCreate([
-      { name: 'student' },
-      { name: 'teacher' },
-      { name: 'admin' },
+      { id: '...', name: 'admin' },
+      { id: '...', name: 'moderator' },
+      { id: '...', name: 'teacher' },
+      { id: '...', name: 'student' }
     ], { returning: true });
 
     console.log('Roles created:', roles.map(r => r.name));

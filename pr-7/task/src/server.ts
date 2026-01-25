@@ -1,5 +1,6 @@
 import 'reflect-metadata';
 import express, { Request, Response, NextFunction } from 'express';
+import compression from 'compression';
 import { connectDB } from './db/db';
 import { Student } from './models/Student';
 import { studentSchema } from './validators/studentValidator';
@@ -7,18 +8,34 @@ import authRoutes from './routes/authRoutes';
 import { authMiddleware } from './middleware/authMiddleware';
 import { roleMiddleware } from './middleware/roleMiddleware';
 import dotenv from 'dotenv';
-import expressStatusMonitor from 'express-status-monitor';
 import swaggerUi from 'swagger-ui-express';
 import swaggerJsdoc from 'swagger-jsdoc';
 import { logInfo, logError } from './logger/logger';
+import expressStatusMonitor from 'express-status-monitor';
+
 
 dotenv.config();
 
 const app = express();
 app.use(express.json());
+app.use(compression());
 
 // Monitoring
+
+const statusMonitor = expressStatusMonitor();
+
 app.use(expressStatusMonitor());
+
+// Страница мониторинга ТОЛЬКО для admin или moderator
+app.get(
+    '/status',
+    authMiddleware,
+    roleMiddleware(['admin', 'moderator']),
+    (req, res) => {
+      // @ts-ignore
+      statusMonitor.pageRoute(req, res);
+    }
+);
 
 // Simple request logger
 app.use((req: Request, _res: Response, next: NextFunction) => {
@@ -389,6 +406,11 @@ app.use((err: any, _req: Request, res: Response, _next: NextFunction) => {
   res.status(500).json({ error: 'Internal Server Error' });
 });
 
-app.listen(PORT, () => logInfo(`Server running at http://localhost:${PORT}`));
+const server = app.listen(PORT, () => {
+  logInfo(`Server running at http://localhost:${PORT}`);
+});
 
-export default app; // for tests
+export { app, server };
+
+
+
